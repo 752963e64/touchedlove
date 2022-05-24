@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+
+[[ -d $1 ]] && { echo "This directory exists."; exit 1; }
+
+function main()
+{
+  local love_pkg_name=""
+  love_pkg_name=${1%/}
+  love_pkg_name=${love_pkg_name##*/}
+
+  mkdir -pv $1
+
+  cat > $1/conf.lua <<"EOF"
+
+function love.conf(t)
+    t.identity = nil                   -- The name of the save directory (string)
+    t.version = "0.9.1"                -- The LÖVE version this game was made for (string)
+    t.console = false                  -- Attach a console (boolean, Windows only)
+
+    t.window.title = "Hello World"     -- The window title (string)
+    t.window.icon = nil                -- Filepath to an image to use as the window's icon (string)
+    t.window.width = 600               -- The window width (number)
+    t.window.height = 480              -- The window height (number)
+    t.window.borderless = true         -- Remove all border visuals from the window (boolean)
+    t.window.resizable = false         -- Let the window be user-resizable (boolean)
+    t.window.minwidth = 1              -- Minimum window width if the window is resizable (number)
+    t.window.minheight = 1             -- Minimum window height if the window is resizable (number)
+    t.window.fullscreen = false        -- Enable fullscreen (boolean)
+    t.window.fullscreentype = "normal" -- Standard fullscreen or desktop fullscreen mode (string)
+    t.window.vsync = false              -- Enable vertical sync (boolean)
+    t.window.fsaa = 0                  -- The number of samples to use with multi-sampled antialiasing (number)
+    t.window.display = 1               -- Index of the monitor to show the window in (number)
+    t.window.highdpi = false           -- Enable high-dpi mode for the window on a Retina display (boolean). Added in 0.9.1
+    t.window.srgb = false              -- Enable sRGB gamma correction when drawing to the screen (boolean). Added in 0.9.1
+
+    t.modules.audio = true             -- Enable the audio module (boolean)
+    t.modules.event = true             -- Enable the event module (boolean)
+    t.modules.graphics = true          -- Enable the graphics module (boolean)
+    t.modules.image = true             -- Enable the image module (boolean)
+    t.modules.joystick = true          -- Enable the joystick module (boolean)
+    t.modules.keyboard = true          -- Enable the keyboard module (boolean)
+    t.modules.math = true              -- Enable the math module (boolean)
+    t.modules.mouse = true             -- Enable the mouse module (boolean)
+    t.modules.physics = true           -- Enable the physics module (boolean)
+    t.modules.sound = true             -- Enable the sound module (boolean)
+    t.modules.system = true            -- Enable the system module (boolean)
+    t.modules.timer = true             -- Enable the timer module (boolean)
+    t.modules.window = true            -- Enable the window module (boolean)
+end
+
+EOF
+
+  cat > $1/main.lua <<"EOF"
+
+function love.load()
+  draw = {}
+  draw.fps = 25
+  draw.dt = 0
+  draw.ttime = 0
+  draw.timer = 0
+  draw.timerupdate = 0
+  draw.updatepersec = 0
+  draw.update = false
+  draw.fpsinfo = 'FPS: ' .. love.timer.getFPS()
+  draw.timeinfo = "time elapsed: " .. draw.ttime .. "s"
+  draw.timerinfo = "timer: " .. draw.timer
+  draw.updateinfo =  "timer update: " .. draw.updatepersec .. "/s "
+  draw.dtinfo = "engine timer: " .. 0 .. "/s"
+  draw.debug = true
+  layer = 0
+
+  event = {}
+  event.lshift = false
+  event.info = 'Press shift+escape to quit.'
+end
+
+function love.keypressed( key, isRepeat )
+  if key == 'f' then
+    success = love.window.setFullscreen( not love.window.getFullscreen() )
+    if not success then event.error = 'Unable to setup fullscreen.' end
+  end
+
+  if key == 'escape' and event.lshift then
+    love.event.quit()
+  end
+
+  if key == 'lshift' then
+    event.lshift = not event.lshift
+  end
+end
+
+function love.keyreleased( key )
+  if key == 'lshift' then
+    event.lshift = false
+  end
+end
+
+function love.update( dt )
+  draw.timerupdate = draw.timerupdate +1
+  draw.dt = draw.dt + dt
+
+  while draw.dt > 1/draw.fps do
+    draw.dt = draw.dt - 1/draw.fps
+    if not draw.update and draw.debug then draw.update = true end
+  end
+
+  draw.timer = draw.timer + dt
+  if draw.timer >= 1 then
+    draw.timer = (draw.timer-1)+0
+    draw.ttime = draw.ttime +1
+    if draw.timerupdate > draw.updatepersec then
+      draw.updatepersec = draw.timerupdate
+    elseif draw.timerupdate < draw.updatepersec then
+      draw.updatepersec = draw.timerupdate
+    end
+    draw.timerupdate = 0
+  end
+
+  if draw.update then
+    draw.update = false
+    draw.fpsinfo = 'FPS: ' .. love.timer.getFPS()
+    draw.timeinfo = "time elapsed: " .. draw.ttime .. "s"
+    draw.timerinfo = "timer: " .. draw.timer
+    draw.updateinfo =  "timer update: " .. draw.updatepersec .. "/s "
+    draw.dtinfo = "engine timer: " .. dt .. "/s"
+  end
+end
+
+function love.draw()
+  if layer == 0 then
+    if draw.debug then
+      love.graphics.printf( draw.fpsinfo, 0, 15, 600, 'center' )
+      love.graphics.printf( draw.timeinfo, 0, 30, 600, 'center' )
+      love.graphics.printf( draw.timerinfo, 0, 45, 600, 'center' )
+      love.graphics.printf( draw.updateinfo, 0, 60, 600, 'center' )
+      love.graphics.printf( draw.dtinfo, 0, 75, 600, 'center' )
+      love.graphics.printf( event.info, 0, (480/2)-7, 600, 'center' )
+    end
+  end
+end
+
+EOF
+  
+  [[ $2 == "-s" ]] && { love ${love_pkg_name}; }
+}
+
+main $@;
+
+
