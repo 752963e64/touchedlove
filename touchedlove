@@ -52,7 +52,7 @@ EOF
 
   cat > $1/main.lua <<"EOF"
 
-function love.load()
+function love.load(t)
   draw = {}
   draw.fps = 25
   draw.dt = 0
@@ -71,7 +71,12 @@ function love.load()
 
   event = {}
   event.lshift = false
-  event.info = 'Press shift+escape to quit.'
+  event.info = 'Press shift+escape to quit the software'
+
+  draw.windowwidth, draw.windowheight, draw.flags = love.window.getMode()
+  draw.windowinfo = "Width: " .. draw.windowwidth .. " Height: " .. draw.windowheight
+  draw.screenwidth, draw.screenheight = love.window.getDesktopDimensions( draw.flags.display )
+  draw.screeninfo = "Width: " .. draw.screenwidth .. " Height: " .. draw.screenheight
 end
 
 function love.keypressed( key, isRepeat )
@@ -98,6 +103,7 @@ end
 function love.update( dt )
   draw.timerupdate = draw.timerupdate +1
   draw.dt = draw.dt + dt
+  draw.layer = 0
 
   while draw.dt > 1/draw.fps do
     draw.dt = draw.dt - 1/draw.fps
@@ -121,22 +127,28 @@ function love.update( dt )
     draw.fpsinfo = 'FPS: ' .. love.timer.getFPS()
     draw.timeinfo = "time elapsed: " .. draw.ttime .. "s"
     draw.timerinfo = "timer: " .. draw.timer
-    draw.updateinfo =  "timer update: " .. draw.updatepersec .. "/s "
     draw.dtinfo = "engine timer: " .. dt .. "/s"
+    draw.updateinfo =  "timer update: " .. draw.updatepersec .. "/s "
+    draw.windowwidth, draw.windowheight, draw.flags = love.window.getMode()
+    draw.windowinfo = "Width: " .. draw.windowwidth .. " Height: " .. draw.windowheight
   end
 end
 
 function love.draw()
-  if layer == 0 then
+  if draw.layer == 0 then
     if draw.debug then
       love.graphics.printf( draw.fpsinfo, 0, 15, 600, 'center' )
       love.graphics.printf( draw.timeinfo, 0, 30, 600, 'center' )
       love.graphics.printf( draw.timerinfo, 0, 45, 600, 'center' )
-      love.graphics.printf( draw.updateinfo, 0, 60, 600, 'center' )
-      love.graphics.printf( draw.dtinfo, 0, 75, 600, 'center' )
+      love.graphics.printf( draw.dtinfo, 0, 60, 600, 'center' )
+      love.graphics.printf( draw.updateinfo, 0, 75, 600, 'center' )
+      love.graphics.printf( draw.windowinfo, 0, 90, 600, 'center' )
+      love.graphics.printf( draw.screeninfo, 0, 105, 600, 'center' )
       love.graphics.printf( event.info, 0, (480/2)-7, 600, 'center' )
     end
   end
+
+  draw.layer = draw.layer +1
 end
 
 EOF
