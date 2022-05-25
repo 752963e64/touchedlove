@@ -54,7 +54,9 @@ EOF
 
 function love.load(t)
   draw = {}
-  draw.fps = 25
+  draw.fps = 2
+  draw.xftsize = 10
+  draw.xftpad = 5
   draw.dt = 0
   draw.ttime = 0
   draw.timer = 0
@@ -137,17 +139,16 @@ end
 function love.draw()
   if draw.layer == 0 then
     if draw.debug then
-      love.graphics.printf( draw.fpsinfo, 0, 15, 600, 'center' )
-      love.graphics.printf( draw.timeinfo, 0, 30, 600, 'center' )
-      love.graphics.printf( draw.timerinfo, 0, 45, 600, 'center' )
-      love.graphics.printf( draw.dtinfo, 0, 60, 600, 'center' )
-      love.graphics.printf( draw.updateinfo, 0, 75, 600, 'center' )
-      love.graphics.printf( draw.windowinfo, 0, 90, 600, 'center' )
-      love.graphics.printf( draw.screeninfo, 0, 105, 600, 'center' )
-      love.graphics.printf( event.info, 0, (480/2)-7, 600, 'center' )
+      love.graphics.printf( draw.fpsinfo, 0, draw.xftsize+draw.xftpad, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.timeinfo, 0, (draw.xftsize+draw.xftpad)*2, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.timerinfo, 0, (draw.xftsize+draw.xftpad)*3, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.dtinfo, 0, (draw.xftsize+draw.xftpad)*4, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.updateinfo, 0, (draw.xftsize+draw.xftpad)*5, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.windowinfo, 0, (draw.xftsize+draw.xftpad)*6, draw.windowwidth, 'center' )
+      love.graphics.printf( draw.screeninfo, 0, (draw.xftsize+draw.xftpad)*7, draw.windowwidth, 'center' )
+      love.graphics.printf( event.info, 0, (draw.windowheight/2)-(draw.xftsize/2), draw.windowwidth, 'center' )
     end
   end
-
   draw.layer = draw.layer +1
 end
 
